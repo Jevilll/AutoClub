@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "295834641229",
+    "firebase_url": "https://autoclub-d8563.firebaseio.com",
+    "project_id": "autoclub-d8563",
+    "storage_bucket": "autoclub-d8563.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295834641229:android:ff256addb65cba43",
+        "android_client_info": {
+          "package_name": "com.example.jevil.autoclub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "295834641229-2364s7s8ikbqvagcqkp8d7mb1r9tol6b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jevil.autoclub",
+            "certificate_hash": "c43e75d195068de7d618af512b62c19783af6cd1"
+          }
+        },
+        {
+          "client_id": "295834641229-lnsvhr9cte64p1gthssem3alk7lol4pj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmFAKap7JUoodVEJu9fOuayf0Olm9c-ns"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "295834641229-lnsvhr9cte64p1gthssem3alk7lol4pj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
