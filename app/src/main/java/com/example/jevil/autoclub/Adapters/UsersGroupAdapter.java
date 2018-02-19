@@ -14,7 +14,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
-public class MenageGroupAdapter extends RecyclerView.Adapter<MenageGroupAdapter.GroupsViewHolder>{
+public class UsersGroupAdapter extends RecyclerView.Adapter<UsersGroupAdapter.GroupsViewHolder>{
 
     private List<GroupRequestModel> list;
     // получаем нашу базу
@@ -28,7 +28,7 @@ public class MenageGroupAdapter extends RecyclerView.Adapter<MenageGroupAdapter.
     // ссылка на группы
     DatabaseReference groupsRef = database.getReference("Groups");
 
-    public MenageGroupAdapter(List<GroupRequestModel> list) {
+    public UsersGroupAdapter(List<GroupRequestModel> list) {
         this.list = list;
     }
 
@@ -52,8 +52,8 @@ public class MenageGroupAdapter extends RecyclerView.Adapter<MenageGroupAdapter.
                 // удаляем из групп у пользователя
                 usersRef.child(user.getUid()).child("myGroups").child(user.getGroup()).removeValue();
 
-                list.remove(position);
-                notifyItemRemoved(position);
+//                list.remove(position);
+//                notifyItemRemoved(position);
             }
         });
     }

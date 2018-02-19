@@ -26,8 +26,8 @@ public class GroupRequestActivity extends AppCompatActivity {
 
     String group;
 
-    private RecyclerView recyclerView;
-    public List<GroupRequestModel> result;
+    private RecyclerView recyclerViewRequest;
+    public List<GroupRequestModel> resultRequest;
     private RequestGroupAdapter createGroupAdapter;
 
 
@@ -40,8 +40,8 @@ public class GroupRequestActivity extends AppCompatActivity {
     // ссылка на группы с запросами
     DatabaseReference groupsForRequestRef = database.getReference("GroupsRequest");
 
-    // ссылка на группы
-    DatabaseReference groupsRef = database.getReference("Groups");
+//    // ссылка на группы
+//    DatabaseReference groupsRef = database.getReference("Groups");
 
     Context context;
 
@@ -50,29 +50,29 @@ public class GroupRequestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_request);
         group = getIntent().getStringExtra("group");
-        Toolbar toolbar = findViewById(R.id.toolbarGroup);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(group);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         context = this;
 
-        result = new ArrayList<>();
-        recyclerView = findViewById(R.id.rvGroup);
-        recyclerView.setHasFixedSize(true);
+        resultRequest = new ArrayList<>();
+        recyclerViewRequest = findViewById(R.id.rvGroupRequest);
+        recyclerViewRequest.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
-        createGroupAdapter = new RequestGroupAdapter(result);
-        recyclerView.setAdapter(createGroupAdapter);
+        recyclerViewRequest.setLayoutManager(llm);
+        createGroupAdapter = new RequestGroupAdapter(resultRequest);
+        recyclerViewRequest.setAdapter(createGroupAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         createGroupAdapter.clear();
-        result.clear();
-        updateList(group);
+        resultRequest.clear();
+        updateListRequest(group);
     }
 
     @Override
@@ -92,8 +92,8 @@ public class GroupRequestActivity extends AppCompatActivity {
 
     public int getItemIndex(String uid) {
         int index = -1;
-        for (int i = 0; i < result.size(); i++) {
-            if (result.get(i).getUid().equals(uid)) {
+        for (int i = 0; i < resultRequest.size(); i++) {
+            if (resultRequest.get(i).getUid().equals(uid)) {
                 index = i;
                 break;
             }
@@ -101,11 +101,11 @@ public class GroupRequestActivity extends AppCompatActivity {
         return index;
     }
 
-    public void updateList(String currentGroup) {
+    public void updateListRequest(String currentGroup) {
         groupsForRequestRef.child(currentGroup).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                result.add(dataSnapshot.getValue(GroupRequestModel.class));
+                resultRequest.add(dataSnapshot.getValue(GroupRequestModel.class));
                 createGroupAdapter.notifyDataSetChanged();
             }
 
@@ -119,7 +119,7 @@ public class GroupRequestActivity extends AppCompatActivity {
                 String uid = dataSnapshot.getKey();
                 int index = getItemIndex(uid);
                 try {
-                    result.remove(index);
+                    resultRequest.remove(index);
                 } catch (Exception e) {
                     Log.d("myLog", e.getMessage());
                 }

@@ -67,8 +67,8 @@ public class RequestGroupAdapter extends RecyclerView.Adapter<RequestGroupAdapte
 
                 // удаляем запись из списка на добавление
                 groupsForRequestRef.child(user.getGroup()).child(user.getUid()).removeValue();
-                list.remove(position);
-                notifyItemRemoved(position);
+//                list.remove(position);
+//                notifyItemRemoved(position);
 
             }
         });
@@ -77,8 +77,8 @@ public class RequestGroupAdapter extends RecyclerView.Adapter<RequestGroupAdapte
             public void onClick(View v) {
                 Log.d("myLog", "reject " + groupRequest.getEmail());
                 groupsForRequestRef.child(user.getGroup()).child(user.getUid()).removeValue();
-                list.remove(position);
-                notifyItemRemoved(position);
+//                list.remove(position);
+//                notifyItemRemoved(position);
             }
         });
     }

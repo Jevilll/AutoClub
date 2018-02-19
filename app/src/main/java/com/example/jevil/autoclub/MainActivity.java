@@ -37,7 +37,6 @@ import com.example.jevil.autoclub.Models.LocationModel;
 import com.example.jevil.autoclub.Models.MessageModel;
 import com.example.jevil.autoclub.Models.UserModel;
 import com.example.jevil.autoclub.Views.AuthDialog;
-import com.example.jevil.autoclub.Views.CreateGroupActivity;
 import com.example.jevil.autoclub.Views.GroupsActivity;
 import com.example.jevil.autoclub.Views.PddActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -64,13 +63,14 @@ import com.google.maps.android.ui.IconGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity  implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     // переменные
     private final String TAG = "myLog";
     private Context context;
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     String currentGroup = "";
     private UserModel currentUser;
     IconGenerator iconFactory;
-    HashMap<String,Marker> hashMapMarker;
+    HashMap<String, Marker> hashMapMarker;
     // получаем нашу базу
     FirebaseDatabase database = FirebaseDatabase.getInstance();
 
@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     private FusedLocationProviderClient mFusedLocationClient;
     LocationManager locationManager;
     TextView tvSpeed;
+    Location mLocation;
 
 
     @Override
@@ -138,6 +139,8 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             // получаем данные текущего пользователя из базы
 
             getCurrentUser();
+
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -187,36 +190,42 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                             // Got last known location. In some rare situations this can be null.
                             if (location != null) {
                                 CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude()));
-                                CameraUpdate zoom = CameraUpdateFactory.zoomTo(12);
+                                mLocation = location;
                                 mMap.moveCamera(center);
-                                mMap.animateCamera(zoom);
-                                Log.d(TAG, "First run, lat: " + location.getLatitude() + " lng: " + location.getLongitude());
+                                // зум
+//                                CameraUpdate zoom = CameraUpdateFactory.zoomTo(12);
+//                                mMap.animateCamera(zoom);
+
                             }
                         }
                     });
             locationManager.requestLocationUpdates(
-                    LocationManager.PASSIVE_PROVIDER, 500, 3, new LocationListener(){
+                    LocationManager.PASSIVE_PROVIDER, 500, 3, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location loc) {
                             tvSpeed.setText(String.valueOf(loc.getSpeed()));
                             // записываем координаты
-                                if (currentUser != null) { // если данные о пользователе успели прийти
-                                    LocationModel locationModel = new LocationModel(loc.getLatitude(), loc.getLongitude(), currentUser.getNickname(), currentUser.getUid(), currentGroup, currentUser.getEmail());
+                            if ((currentUser != null) && (currentGroup != null)) { // если данные о пользователе успели прийти
 
-                                    Map<String, Object> groupValues = locationModel.toMap();
-                                    Map<String, Object> location = new HashMap<>();
-                                    location.put(currentUser.getUid(), groupValues);
-                                    locationRef.child(currentGroup).updateChildren(location);
-                                }
+                                LocationModel locationModel = new LocationModel(loc.getLatitude(), loc.getLongitude(), currentUser.getNickname(), currentUser.getUid(), currentGroup, currentUser.getEmail());
+
+                                Map<String, Object> groupValues = locationModel.toMap();
+                                Map<String, Object> location = new HashMap<>();
+                                location.put(currentUser.getUid(), groupValues);
+                                locationRef.child(currentGroup).updateChildren(location);
+                            }
                         }
+
                         @Override
                         public void onProviderDisabled(String arg0) {
                         }
+
                         @Override
                         public void onProviderEnabled(String provider) {
                         }
+
                         @Override
-                        public void onStatusChanged(String provider,int status, Bundle extras) {
+                        public void onStatusChanged(String provider, int status, Bundle extras) {
                         }
 
                     });
@@ -226,7 +235,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     private void requestPermissions() {
         // запрашиваем разрешение
         ActivityCompat.requestPermissions(this,
-                new String[] {
+                new String[]{
                         android.Manifest.permission.ACCESS_FINE_LOCATION,
                         android.Manifest.permission.ACCESS_NETWORK_STATE
                 },
@@ -305,25 +314,27 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.action_create_group:
-                Intent intentCreateGroup = new Intent(this,CreateGroupActivity.class);
-                startActivity(intentCreateGroup);
-                break;
+//            case R.id.action_create_group:
+//                Intent intentCreateGroup = new Intent(this, CreateGroupActivity.class);
+//                startActivity(intentCreateGroup);
+//                break;
             case R.id.action_my_groups:
-                Intent intentMyGroups = new Intent(this,GroupsActivity.class);
+                Intent intentMyGroups = new Intent(this, GroupsActivity.class);
                 startActivity(intentMyGroups);
                 break;
             case R.id.action_pdd:
-                Intent intentPdd = new Intent(this,PddActivity.class);
+                Intent intentPdd = new Intent(this, PddActivity.class);
                 startActivity(intentPdd);
                 break;
             case R.id.action_sign_out:
                 usersRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status")
                         .setValue("offline");
                 mAuth.signOut();
-                AuthDialog mydialog = new AuthDialog(context);
-                mydialog.setCancelable(false);
-                mydialog.show();
+                Intent i = new Intent( this , this.getClass() );
+                finish();
+                this.startActivity(i);
+                // удаляем координаты пользователя
+                //locationRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(currentGroup).removeValue();
                 break;
         }
 
@@ -449,6 +460,14 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent,
                                        View itemSelected, int selectedItemPosition, long selectedId) {
+                // удаляем метки
+                clearMarkers();
+//                Iterator<Map.Entry<String, Marker>> entries = hashMapMarker.entrySet().iterator();
+//                while (entries.hasNext()) {
+//                    entries.next().getValue().remove();
+//                }
+//                hashMapMarker.clear();
+
                 // при изменинии группы отвязываем слушатели на старые ссылки
                 // чат
                 if (childEventListenerChat != null) {
@@ -468,6 +487,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                 displayChat();
                 setMyLocation();
             }
+
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
@@ -496,14 +516,14 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                 .findFragmentById(R.id.mapView);
         mapFragment.getMapAsync(this);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
     }
 
     @Override
     public void onDestroy() {
         if (userInTheSystem()) { // если пользователь в системе, меняем статус при закрытии приложении
-        usersRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status")
-                .setValue("offline");
-
+            usersRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status")
+                    .setValue("offline");
         }
         super.onDestroy();
     }
@@ -522,9 +542,9 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 String uid = dataSnapshot.getKey();
-               LocationModel locationModel = dataSnapshot.getValue(LocationModel.class);
-               if (!locationModel.getUid().equals(currentUser.getUid()))
-                   addMarker(locationModel.getLat(), locationModel.getLng(), locationModel.getNickname(), locationModel.getEmail());
+                LocationModel locationModel = dataSnapshot.getValue(LocationModel.class);
+                if (!locationModel.getUid().equals(currentUser.getUid()))
+                    addMarker(locationModel.getLat(), locationModel.getLng(), locationModel.getNickname(), locationModel.getEmail());
 //                   Log.d("myLog", "Добавлено: " + locationModel.getGroup() + " Пользователь: " + locationModel.getNickname() + " lat " + locationModel.getLat() + " lng " + locationModel.getLng());
             }
 
@@ -541,5 +561,13 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             }
         };
         locationRef.child(currentGroup).addChildEventListener(childEventListenerLocation);
+    }
+
+    public void clearMarkers() {
+        Iterator<Map.Entry<String, Marker>> entries = hashMapMarker.entrySet().iterator();
+        while (entries.hasNext()) {
+            entries.next().getValue().remove();
+        }
+        hashMapMarker.clear();
     }
 }

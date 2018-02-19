@@ -11,13 +11,40 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <include layout="@layout/toolbar" />
+
+        <TextView
+            android:id="@+id/tvRequest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="Запросов нет"
+            android:visibility="visible" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvGroupRequest"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="Пользователей нет"
+            android:visibility="visible" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rvGroup"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:layout_weight="1"
+            android:visibility="gone" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

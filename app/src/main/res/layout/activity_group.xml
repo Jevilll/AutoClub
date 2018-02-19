@@ -54,11 +54,21 @@
                     android:layout_weight="1" />
 
                 <Button
+                    android:id="@+id/btnCreateGroup"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="создать"
+                    card_view:layout_constraintBottom_toBottomOf="parent"
+                    card_view:layout_constraintRight_toRightOf="parent" />
+
+                <Button
                     android:id="@+id/btnJoinGroup"
                     style="@style/Widget.AppCompat.Button.Borderless.Colored"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="right"
+                    android:layout_gravity="end"
                     android:text="Вступить"
                     card_view:layout_constraintBottom_toBottomOf="parent"
                     card_view:layout_constraintRight_toRightOf="parent" />

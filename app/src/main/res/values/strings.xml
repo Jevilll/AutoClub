@@ -16,7 +16,7 @@
     <string name="tv_create">Нет учетной записи? Создать</string>
     <string name="loading">Загрузка…</string>
 
-    <string name="action_join_group">Мои группы</string>
+    <string name="action_group">Группы</string>
     <string name="action_create_group">Создание группы</string>
     <string name="action_sign_out">Выйти</string>
     <string name="action_pdd">ПДД</string>

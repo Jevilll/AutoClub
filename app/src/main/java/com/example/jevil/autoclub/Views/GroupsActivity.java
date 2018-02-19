@@ -72,6 +72,11 @@ public class GroupsActivity extends AppCompatActivity {
         joinGroup(etGroupName.getText().toString());
     }
 
+    @OnClick(R.id.btnCreateGroup)
+    void createClick(Button btnCreate) {
+        createGroup(etGroupName.getText().toString());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,6 +116,48 @@ public class GroupsActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void createGroup(final String groupName) {
+        groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean canAdd = true;
+                // проверяем уникальность названия группы
+                for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                    if (groupSnapshot.getKey().equals(groupName)) {
+                        canAdd = false;
+                    }
+                }
+                if (canAdd) { // если группы с таким называнием нет
+                    // добавляем группу к пользователю
+
+                    GroupModel creatorMyGroups = new GroupModel(groupName, "creator");
+                    Map<String, Object> myGroupValues = creatorMyGroups.toMap();
+                    Map<String, Object> myGroup = new HashMap<>();
+                    myGroup.put(groupName, myGroupValues);
+                    usersRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("myGroups").updateChildren(myGroup);
+
+                    // вступаем в созданную группу
+                    GroupRequestModel creator = new GroupRequestModel(currentUser.getNickname(), currentUser.getEmail(), currentUser.getUid(), groupName);
+                    Map<String, Object> groupValues = creator.toMap();
+                    Map<String, Object> group = new HashMap<>();
+                    group.put(currentUser.getUid(), groupValues);
+                    groupsRef.child(groupName).updateChildren(group);
+
+                    Snackbar.make(llGroupControl, "Группа \"" + groupName + " \" создана", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+
+                } else
+                    Snackbar.make(llGroupControl, "Группа \"" + groupName + "\" уже существует", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void joinGroup(final String groupName) {

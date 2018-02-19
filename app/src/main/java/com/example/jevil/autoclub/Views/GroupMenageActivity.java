@@ -7,10 +7,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
-import com.example.jevil.autoclub.Adapters.MenageGroupAdapter;
+import com.example.jevil.autoclub.Adapters.UsersGroupAdapter;
+import com.example.jevil.autoclub.Adapters.RequestGroupAdapter;
 import com.example.jevil.autoclub.Models.GroupRequestModel;
 import com.example.jevil.autoclub.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,9 +32,15 @@ public class GroupMenageActivity extends AppCompatActivity {
 
     String group;
 
+    // запросы
+    private RecyclerView recyclerViewRequest;
+    public List<GroupRequestModel> resultRequest;
+    private RequestGroupAdapter createGroupAdapter;
+
+    // пользователи
     private RecyclerView recyclerView;
     public List<GroupRequestModel> result;
-    private MenageGroupAdapter menageGroupAdapter;
+    private UsersGroupAdapter menageGroupAdapter;
 
 
     // получаем нашу базу
@@ -50,6 +60,8 @@ public class GroupMenageActivity extends AppCompatActivity {
 
     Context context;
 
+    TextView tvRequest, tvUsers;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,22 +74,42 @@ public class GroupMenageActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         context = this;
 
+        tvRequest = findViewById(R.id.tvRequest);
+        tvUsers = findViewById(R.id.tvUsers);
+
+        // запросы
+        resultRequest = new ArrayList<>();
+        recyclerViewRequest = findViewById(R.id.rvGroupRequest);
+        recyclerViewRequest.setHasFixedSize(true);
+        LinearLayoutManager llmRequest = new LinearLayoutManager(context);
+        llmRequest.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerViewRequest.setLayoutManager(llmRequest);
+        createGroupAdapter = new RequestGroupAdapter(resultRequest);
+        recyclerViewRequest.setAdapter(createGroupAdapter);
+
+        // пользователи
         result = new ArrayList<>();
         recyclerView = findViewById(R.id.rvGroup);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-        menageGroupAdapter = new MenageGroupAdapter(result);
+        menageGroupAdapter = new UsersGroupAdapter(result);
         recyclerView.setAdapter(menageGroupAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // запросы
+        createGroupAdapter.clear();
+        resultRequest.clear();
+        updateListRequest(group);
+
+        // пользователи
         menageGroupAdapter.clear();
         result.clear();
-        updateList(group);
+        updateListUsers(group);
     }
 
     @Override
@@ -127,10 +159,10 @@ public class GroupMenageActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public int getItemIndex(String uid) {
+    public int getItemIndex(String uid, List<GroupRequestModel> list) {
         int index = -1;
-        for (int i = 0; i < result.size(); i++) {
-            if (result.get(i).getUid().equals(uid)) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getUid().equals(uid)) {
                 index = i;
                 break;
             }
@@ -138,7 +170,8 @@ public class GroupMenageActivity extends AppCompatActivity {
         return index;
     }
 
-    public void updateList(String currentGroup) {
+    // пользователи
+    public void updateListUsers(String currentGroup) {
         groupsRef.child(currentGroup).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -146,6 +179,11 @@ public class GroupMenageActivity extends AppCompatActivity {
                 if (!FirebaseAuth.getInstance().getCurrentUser().getUid().equals(dataSnapshot.getValue(GroupRequestModel.class).getUid())) {
                     result.add(dataSnapshot.getValue(GroupRequestModel.class));
                     menageGroupAdapter.notifyDataSetChanged();
+//                    if (result.size() != 0) {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        tvUsers.setText("Пользователи");
+                        tvUsers.setGravity(Gravity.END);
+//                    }
                 }
 
             }
@@ -158,13 +196,68 @@ public class GroupMenageActivity extends AppCompatActivity {
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 String uid = dataSnapshot.getKey();
-                int index = getItemIndex(uid);
+                int index = getItemIndex(uid, result);
                 try {
                     result.remove(index);
+                    if (result.size() == 0) {
+                        recyclerView.setVisibility(View.GONE);
+                        tvUsers.setText("Пользователей нет");
+                        tvUsers.setGravity(Gravity.CENTER);
+                    }
                 } catch (Exception e) {
                     Log.d("myLog", e.getMessage());
                 }
                 menageGroupAdapter.notifyItemRemoved(index);
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    // запросы
+    public void updateListRequest(String currentGroup) {
+        groupsForRequestRef.child(currentGroup).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                resultRequest.add(dataSnapshot.getValue(GroupRequestModel.class));
+                createGroupAdapter.notifyDataSetChanged();
+//                if (resultRequest.size() != 0) {
+                    recyclerViewRequest.setVisibility(View.VISIBLE);
+                    tvRequest.setText("Заявки");
+                tvRequest.setGravity(Gravity.END);
+//                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                String uid = dataSnapshot.getKey();
+                int index = getItemIndex(uid, resultRequest);
+                try {
+                    resultRequest.remove(index); // тут инденс -1
+                    createGroupAdapter.notifyItemRemoved(index);
+                    if (resultRequest.size() == 0) {
+                        recyclerViewRequest.setVisibility(View.GONE);
+                        tvRequest.setText("Запросов нет");
+                        tvRequest.setGravity(Gravity.CENTER);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.d("myLog", e.getMessage());
+                }
+
             }
 
             @Override
